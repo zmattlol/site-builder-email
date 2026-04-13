@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Website Outreach Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Website outreach dashboard</p>
+        <h1>Personalized website outreach, with review before send.</h1>
+        <p class="hero-copy">
+          Add a business, generate a tailored email about building them a custom
+          website, tweak the wording, and send it through your own inbox.
+        </p>
+      </div>
+      <div class="compliance-card">
+        <strong>Workflow guardrails</strong>
+        <ul>
+          <li>Designed for one-to-one outreach, not bulk blasting.</li>
+          <li>Each email is reviewed in the dashboard before sending.</li>
+          <li>Leads can be marked as do not contact at any time.</li>
+        </ul>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <h2>Add a business</h2>
+        <form id="lead-form" class="grid-form">
+          <label>
+            Business name
+            <input name="business_name" required />
+          </label>
+          <label>
+            Contact name
+            <input name="contact_name" />
+          </label>
+          <label>
+            Contact email
+            <input type="email" name="email" required />
+          </label>
+          <label>
+            Business type
+            <input name="business_type" placeholder="Contractor, salon, dentist..." />
+          </label>
+          <label>
+            Location
+            <input name="location" placeholder="City or service area" />
+          </label>
+          <label>
+            Google profile URL
+            <input name="google_profile_url" placeholder="Optional" />
+          </label>
+          <label class="full-width">
+            What you offer
+            <input
+              name="offer_summary"
+              placeholder="building and setting up a personalized site for their business"
+            />
+          </label>
+          <label class="full-width">
+            Observed gap
+            <input
+              name="observed_gap"
+              placeholder="I could not find a dedicated website linked from your Google profile"
+            />
+          </label>
+          <label class="full-width">
+            Benefits focus
+            <input
+              name="benefits_focus"
+              placeholder="show services clearly, get more quote requests, look more established"
+            />
+          </label>
+          <label class="full-width">
+            Notes
+            <textarea
+              name="notes"
+              rows="3"
+              placeholder="Anything specific to mention about the business"
+            ></textarea>
+          </label>
+          <button type="submit" class="primary">Save lead</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="section-header">
+          <h2>Leads</h2>
+          <span id="lead-count" class="muted">0 saved</span>
+        </div>
+        <div id="lead-list" class="lead-list empty-state">
+          No leads yet. Add one to start your outreach list.
+        </div>
+      </section>
+
+      <section class="panel detail-panel">
+        <div class="section-header">
+          <h2>Lead detail</h2>
+          <span id="detail-status" class="status-pill">No lead selected</span>
+        </div>
+
+        <form id="detail-form" class="detail-form" hidden>
+          <div class="grid-form">
+            <label>
+              Business name
+              <input name="business_name" />
+            </label>
+            <label>
+              Contact name
+              <input name="contact_name" />
+            </label>
+            <label>
+              Contact email
+              <input type="email" name="email" />
+            </label>
+            <label>
+              Business type
+              <input name="business_type" />
+            </label>
+            <label>
+              Location
+              <input name="location" />
+            </label>
+            <label>
+              Google profile URL
+              <input name="google_profile_url" />
+            </label>
+            <label class="full-width">
+              What you offer
+              <input name="offer_summary" />
+            </label>
+            <label class="full-width">
+              Observed gap
+              <input name="observed_gap" />
+            </label>
+            <label class="full-width">
+              Benefits focus
+              <input name="benefits_focus" />
+            </label>
+            <label class="full-width">
+              Notes
+              <textarea name="notes" rows="3"></textarea>
+            </label>
+            <label class="checkbox-row full-width">
+              <input type="checkbox" name="do_not_contact" />
+              Mark as do not contact
+            </label>
+            <label class="full-width">
+              Email subject
+              <input name="draft_subject" />
+            </label>
+            <label class="full-width">
+              Email body
+              <textarea name="draft_body" rows="14"></textarea>
+            </label>
+          </div>
+
+          <div class="actions">
+            <button type="button" id="generate-button">Generate draft</button>
+            <button type="submit" class="primary">Save changes</button>
+            <button type="button" id="send-button" class="accent">Send email</button>
+          </div>
+        </form>
+
+        <div id="detail-empty" class="empty-state">
+          Choose a lead to edit the draft and send outreach.
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" hidden></div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>
+
