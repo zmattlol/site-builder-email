@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Preview | {{ lead['business_name'] }}{% endblock %}
+
+{% block content %}
+<section class="card preview-card">
+  <h2>Email Preview</h2>
+  <p class="muted">
+    <strong>{{ lead['business_name'] }}</strong> &lt;{{ lead['email'] }}&gt;
+  </p>
+
+  <article class="email-preview">
+    <h3>Subject</h3>
+    <pre>{{ subject }}</pre>
+    <h3>Body</h3>
+    <pre>{{ body }}</pre>
+  </article>
+
+  <div class="row-actions">
+    <a class="button-link" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    <form method="post" action="{{ url_for('send_single_email', lead_id=lead['id']) }}">
+      <button type="submit">Send This Email</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

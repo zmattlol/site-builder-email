@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Website Outreach{% endblock %}
+
+{% block content %}
+<section class="grid-two">
+  <article class="card">
+    <h2>1) Add Lead</h2>
+    <form method="post" action="{{ url_for('add_lead') }}" class="form-grid">
+      <label>
+        Business Name *
+        <input name="business_name" type="text" required>
+      </label>
+      <label>
+        Contact Name
+        <input name="contact_name" type="text" placeholder="Optional">
+      </label>
+      <label>
+        Email *
+        <input name="email" type="email" required>
+      </label>
+      <label>
+        City / Area
+        <input name="city" type="text">
+      </label>
+      <label class="full-width">
+        Google Profile URL
+        <input name="google_profile_url" type="url" placeholder="https://...">
+      </label>
+      <label class="full-width">
+        Notes
+        <textarea name="notes" rows="3" placeholder="Services, niche, tone preferences..."></textarea>
+      </label>
+      <button type="submit">Add Lead</button>
+    </form>
+  </article>
+
+  <article class="card">
+    <h2>2) SMTP + Messaging Setup</h2>
+    <form method="post" action="{{ url_for('save_settings') }}" class="form-grid">
+      <label>
+        SMTP Host
+        <input name="smtp_host" type="text" value="{{ settings['smtp_host'] }}">
+      </label>
+      <label>
+        SMTP Port
+        <input name="smtp_port" type="number" min="1" max="65535" value="{{ settings['smtp_port'] }}">
+      </label>
+      <label>
+        SMTP Username
+        <input name="smtp_username" type="text" value="{{ settings['smtp_username'] }}">
+      </label>
+      <label>
+        SMTP Password
+        <input name="smtp_password" type="password" value="{{ settings['smtp_password'] }}">
+      </label>
+      <label>
+        From Email
+        <input name="from_email" type="email" value="{{ settings['from_email'] }}">
+      </label>
+      <label>
+        Reply-To
+        <input name="reply_to" type="email" value="{{ settings['reply_to'] }}">
+      </label>
+      <label class="checkbox-row full-width">
+        <input name="smtp_use_tls" type="checkbox" {% if settings['smtp_use_tls'] %}checked{% endif %}>
+        Use STARTTLS
+      </label>
+      <label class="full-width">
+        Sender Name
+        <input name="sender_name" type="text" value="{{ settings['sender_name'] }}">
+      </label>
+      <label class="full-width">
+        What You Offer
+        <input name="offer" type="text" value="{{ settings['offer'] }}">
+      </label>
+      <label class="full-width">
+        Benefits (one per line)
+        <textarea name="benefits" rows="4">{{ settings['benefits'] }}</textarea>
+      </label>
+      <label class="full-width">
+        Soft CTA
+        <input name="cta" type="text" value="{{ settings['cta'] }}">
+      </label>
+      <label class="full-width">
+        Subject Template
+        <input name="subject_template" type="text" value="{{ settings['subject_template'] }}">
+      </label>
+      <label class="full-width">
+        Body Template
+        <textarea name="body_template" rows="10">{{ settings['body_template'] }}</textarea>
+      </label>
+      <div class="full-width tip-box">
+        <strong>Available placeholders:</strong>
+        <code>
+          {% for item in placeholders %}
+            {{ "{{" + item + "}}" }}{% if not loop.last %}, {% endif %}
+          {% endfor %}
+        </code>
+      </div>
+      <button type="submit">Save Settings</button>
+    </form>
+  </article>
+</section>
+
+<section class="card">
+  <div class="table-title">
+    <h2>3) Leads + Outreach</h2>
+    <p>Select leads and send in bulk, or preview/send individually.</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th><input type="checkbox" data-select-all></th>
+          <th>Business</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Sent Count</th>
+          <th>Last Result</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for lead in leads %}
+          <tr>
+            <td><input type="checkbox" name="lead_ids" value="{{ lead['id'] }}" form="bulk-send-form"></td>
+            <td>
+              <div class="lead-main">
+                <strong>{{ lead['business_name'] }}</strong>
+                {% if lead['contact_name'] %}
+                  <span>({{ lead['contact_name'] }})</span>
+                {% endif %}
+              </div>
+              <div class="lead-sub">
+                {% if lead['city'] %}<span>{{ lead['city'] }}</span>{% endif %}
+                {% if lead['google_profile_url'] %}
+                  <a href="{{ lead['google_profile_url'] }}" target="_blank" rel="noopener noreferrer">Profile</a>
+                {% endif %}
+              </div>
+            </td>
+            <td>{{ lead['email'] }}</td>
+            <td>
+              <form method="post" action="{{ url_for('update_status', lead_id=lead['id']) }}" class="inline-form">
+                <select name="status">
+                  {% for status in statuses %}
+                    <option value="{{ status }}" {% if lead['status'] == status %}selected{% endif %}>{{ status }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit">Update</button>
+              </form>
+            </td>
+            <td>{{ lead['sent_count'] }}</td>
+            <td>
+              {% if lead['last_email_status'] == 'sent' %}
+                <span class="badge badge-success">sent</span>
+                {% if lead['last_sent_at'] %}
+                  <small>{{ lead['last_sent_at'] }}</small>
+                {% endif %}
+              {% elif lead['last_email_status'] == 'failed' %}
+                <span class="badge badge-error">failed</span>
+                {% if lead['last_error'] %}
+                  <small>{{ lead['last_error'] }}</small>
+                {% endif %}
+              {% else %}
+                <span class="badge">none</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="row-actions">
+                <a class="button-link" href="{{ url_for('preview_email', lead_id=lead['id']) }}">Preview</a>
+                <form method="post" action="{{ url_for('send_single_email', lead_id=lead['id']) }}">
+                  <button type="submit">Send</button>
+                </form>
+                <form method="post" action="{{ url_for('delete_lead', lead_id=lead['id']) }}">
+                  <button type="submit" class="danger">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" class="muted">No leads yet. Add one to get started.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <form id="bulk-send-form" method="post" action="{{ url_for('send_bulk_campaign') }}">
+    <button type="submit" class="bulk-send">Send to Selected</button>
+  </form>
+</section>
+
+<script>
+  const selectAll = document.querySelector('[data-select-all]');
+  if (selectAll) {
+    selectAll.addEventListener('change', () => {
+      document.querySelectorAll('input[name="lead_ids"]').forEach((checkbox) => {
+        checkbox.checked = selectAll.checked;
+      });
+    });
+  }
+</script>
+{% endblock %}
