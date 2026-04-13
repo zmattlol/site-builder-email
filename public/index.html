@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Website Outreach Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Website Outreach Dashboard</h1>
+        <p>
+          Create personalized emails for businesses that do not yet have a website,
+          then send or preview from one place.
+        </p>
+      </header>
+
+      <section class="card">
+        <h2>Outreach Email Builder</h2>
+        <form id="outreach-form">
+          <div class="grid">
+            <label>
+              Business Name
+              <input name="businessName" required placeholder="Acme Auto Repair" />
+            </label>
+
+            <label>
+              Contact Name (optional)
+              <input name="contactName" placeholder="Jordan" />
+            </label>
+
+            <label>
+              Contact Email
+              <input type="email" name="contactEmail" required placeholder="owner@acme.com" />
+            </label>
+
+            <label>
+              City / Area
+              <input name="location" required placeholder="Austin, TX" />
+            </label>
+
+            <label>
+              Business Type
+              <input name="businessType" required placeholder="Auto repair shop" />
+            </label>
+
+            <label>
+              Your Name
+              <input name="yourName" required placeholder="Your Name" />
+            </label>
+          </div>
+
+          <label>
+            Your Offer / Service Description
+            <textarea
+              name="offerDetails"
+              rows="3"
+              required
+              placeholder="I build personalized websites for local businesses, including setup, content structure, and lead capture forms."
+            ></textarea>
+          </label>
+
+          <label>
+            Relevant notes from profile (optional)
+            <textarea
+              name="businessNotes"
+              rows="3"
+              placeholder="Google profile shows phone/location but no website listed."
+            ></textarea>
+          </label>
+
+          <label class="inline-checkbox">
+            <input type="checkbox" name="sendEmail" />
+            Send email now (unchecked = preview only)
+          </label>
+
+          <button type="submit">Generate Outreach Email</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Email Preview</h2>
+        <div class="preview-meta">
+          <p><strong>Subject:</strong> <span id="preview-subject">-</span></p>
+          <p><strong>To:</strong> <span id="preview-recipient">-</span></p>
+          <p><strong>Status:</strong> <span id="preview-status">Waiting for input</span></p>
+        </div>
+        <pre id="preview-body">Fill out the form to generate an outreach email.</pre>
+      </section>
+
+      <section class="card">
+        <h2>Recent Activity</h2>
+        <button id="refresh-log" type="button">Refresh Log</button>
+        <div id="history"></div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

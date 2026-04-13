@@ -1,0 +1,29 @@
+{
+  "name": "site-builder-email",
+  "version": "1.0.0",
+  "description": "Simple outreach dashboard for personalized website emails",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --check server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zmattlol/site-builder-email.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zmattlol/site-builder-email/issues"
+  },
+  "homepage": "https://github.com/zmattlol/site-builder-email#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "nodemailer": "^8.0.5"
+  }
+}
