@@ -110,11 +110,13 @@ export default function OutreachDashboard({
         throw new Error(data.error ?? "Unable to save the outreach draft.");
       }
 
-      setRecords((current) => syncRecords(current, data.record));
-      setProspect((current) => ({ ...current, id: data.record.id }));
+      const savedRecord = data.record;
+
+      setRecords((current) => syncRecords(current, savedRecord));
+      setProspect((current) => ({ ...current, id: savedRecord.id }));
       setNotice({
         kind: "success",
-        text: `Draft saved for ${data.record.businessName}.`,
+        text: `Draft saved for ${savedRecord.businessName}.`,
       });
     } catch (error) {
       setNotice({
@@ -150,7 +152,8 @@ export default function OutreachDashboard({
 
       if (!response.ok) {
         if (data.record) {
-          setRecords((current) => syncRecords(current, data.record));
+          const failedRecord = data.record;
+          setRecords((current) => syncRecords(current, failedRecord));
         }
 
         throw new Error(data.error ?? "Unable to send the outreach email.");
@@ -160,14 +163,16 @@ export default function OutreachDashboard({
         throw new Error("Unable to send the outreach email.");
       }
 
-      setRecords((current) => syncRecords(current, data.record));
+      const sentRecord = data.record;
+
+      setRecords((current) => syncRecords(current, sentRecord));
       setProspect({
         ...defaultProspect,
         tone: prospect.tone,
       });
       setNotice({
         kind: "success",
-        text: `Email sent to ${data.record.businessName} at ${data.record.email}.`,
+        text: `Email sent to ${sentRecord.businessName} at ${sentRecord.email}.`,
       });
     } catch (error) {
       const message =
