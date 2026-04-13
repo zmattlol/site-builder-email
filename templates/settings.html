@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Settings — OutreachBot{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="settings-grid">
+  <div class="card">
+    <div class="card-header">
+      <h2>SMTP Configuration</h2>
+      <p class="text-muted">Configure your email sending server (Gmail, Outlook, custom SMTP, etc.)</p>
+    </div>
+    <form id="smtp-form">
+      <div class="form-group">
+        <label>SMTP Server</label>
+        <input type="text" id="set-smtp-server" placeholder="smtp.gmail.com">
+      </div>
+      <div class="form-group">
+        <label>SMTP Port</label>
+        <input type="number" id="set-smtp-port" placeholder="587">
+      </div>
+      <div class="form-group">
+        <label>Username / Email</label>
+        <input type="text" id="set-smtp-username" placeholder="you@gmail.com">
+      </div>
+      <div class="form-group">
+        <label>Password / App Password</label>
+        <input type="password" id="set-smtp-password" placeholder="Enter new password to change">
+        <small class="text-muted">For Gmail, use an <a href="https://support.google.com/accounts/answer/185833" target="_blank">App Password</a>.</small>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="testSmtp()">Test Connection</button>
+        <button type="submit" class="btn btn-primary">Save SMTP Settings</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>Your Info</h2>
+      <p class="text-muted">This info is used in email templates (signature, contact details, etc.)</p>
+    </div>
+    <form id="sender-form">
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" id="set-sender-name" placeholder="John Doe">
+      </div>
+      <div class="form-group">
+        <label>Your Email</label>
+        <input type="email" id="set-sender-email" placeholder="john@yoursite.com">
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="text" id="set-sender-phone" placeholder="555-123-4567">
+      </div>
+      <div class="form-group">
+        <label>Website URL</label>
+        <input type="url" id="set-sender-website" placeholder="https://yourwebsite.com">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Info</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+async function loadSettings() {
+  const res = await fetch('/api/settings');
+  const s = await res.json();
+  document.getElementById('set-smtp-server').value = s.smtp_server || '';
+  document.getElementById('set-smtp-port').value = s.smtp_port || 587;
+  document.getElementById('set-smtp-username').value = s.smtp_username || '';
+  document.getElementById('set-sender-name').value = s.sender_name || '';
+  document.getElementById('set-sender-email').value = s.sender_email || '';
+  document.getElementById('set-sender-phone').value = s.sender_phone || '';
+  document.getElementById('set-sender-website').value = s.sender_website || '';
+}
+
+document.getElementById('smtp-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = {
+    smtp_server: document.getElementById('set-smtp-server').value.trim(),
+    smtp_port: parseInt(document.getElementById('set-smtp-port').value) || 587,
+    smtp_username: document.getElementById('set-smtp-username').value.trim(),
+  };
+  const pw = document.getElementById('set-smtp-password').value;
+  if (pw) data.smtp_password = pw;
+  const res = await fetch('/api/settings', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+  if (res.ok) showToast('SMTP settings saved!', 'success');
+  else showToast('Failed to save', 'error');
+});
+
+document.getElementById('sender-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = {
+    sender_name: document.getElementById('set-sender-name').value.trim(),
+    sender_email: document.getElementById('set-sender-email').value.trim(),
+    sender_phone: document.getElementById('set-sender-phone').value.trim(),
+    sender_website: document.getElementById('set-sender-website').value.trim(),
+  };
+  const res = await fetch('/api/settings', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+  if (res.ok) showToast('Sender info saved!', 'success');
+  else showToast('Failed to save', 'error');
+});
+
+async function testSmtp() {
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Testing...';
+  try {
+    const res = await fetch('/api/settings/test', { method: 'POST' });
+    const result = await res.json();
+    if (result.success) showToast('SMTP connection successful!', 'success');
+    else showToast('Connection failed: ' + result.error, 'error');
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Test Connection'; }
+}
+
+loadSettings();
+</script>
+{% endblock %}

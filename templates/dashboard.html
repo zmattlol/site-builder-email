@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — OutreachBot{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ stats.total }}</span>
+      <span class="stat-label">Total Contacts</span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon amber">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ stats.pending }}</span>
+      <span class="stat-label">Pending</span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ stats.sent }}</span>
+      <span class="stat-label">Emails Sent</span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon purple">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ stats.replied }}</span>
+      <span class="stat-label">Replied</span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon teal">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ stats.converted }}</span>
+      <span class="stat-label">Converted</span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ stats.failed }}</span>
+      <span class="stat-label">Failed</span>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-lg">
+  <div class="card-header">
+    <h2>Quick Send</h2>
+    <p class="text-muted">Add a business and send an outreach email in one step</p>
+  </div>
+  <form id="quick-send-form" class="form-grid">
+    <div class="form-group">
+      <label for="qs-business">Business Name *</label>
+      <input type="text" id="qs-business" placeholder="e.g. Joe's Barbershop" required>
+    </div>
+    <div class="form-group">
+      <label for="qs-email">Email *</label>
+      <input type="email" id="qs-email" placeholder="owner@business.com" required>
+    </div>
+    <div class="form-group">
+      <label for="qs-contact">Contact Name</label>
+      <input type="text" id="qs-contact" placeholder="Joe Smith">
+    </div>
+    <div class="form-group">
+      <label for="qs-industry">Industry</label>
+      <input type="text" id="qs-industry" placeholder="e.g. Food & Beverage">
+    </div>
+    <div class="form-group">
+      <label for="qs-city">City</label>
+      <input type="text" id="qs-city" placeholder="e.g. Austin, TX">
+    </div>
+    <div class="form-group">
+      <label for="qs-notes">Notes</label>
+      <input type="text" id="qs-notes" placeholder="Found on Google Maps, no website">
+    </div>
+    <div class="form-actions full-width">
+      <button type="button" class="btn btn-secondary" onclick="previewQuickSend()">Preview Email</button>
+      <button type="submit" class="btn btn-primary">Save & Send</button>
+      <button type="button" class="btn btn-outline" onclick="saveOnly()">Save Only</button>
+    </div>
+  </form>
+</div>
+
+<div class="card mt-lg">
+  <div class="card-header">
+    <h2>Recent Activity</h2>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Business</th>
+          <th>Subject</th>
+          <th>Status</th>
+          <th>Sent At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in recent_logs %}
+        <tr>
+          <td>{{ log.contact.business_name if log.contact else 'N/A' }}</td>
+          <td>{{ log.subject }}</td>
+          <td><span class="badge {{ 'badge-green' if log.status == 'sent' else 'badge-red' }}">{{ log.status }}</span></td>
+          <td>{{ log.sent_at.strftime('%b %d, %Y %I:%M %p') if log.sent_at else '' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-center text-muted">No emails sent yet. Add a contact above and hit Send!</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Preview modal -->
+<div id="preview-modal" class="modal" style="display:none">
+  <div class="modal-backdrop" onclick="closeModal('preview-modal')"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Email Preview</h3>
+      <button class="btn-icon" onclick="closeModal('preview-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p><strong>Subject:</strong> <span id="preview-subject"></span></p>
+      <hr>
+      <pre id="preview-body" style="white-space:pre-wrap;font-family:inherit;"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('quick-send-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = getQuickSendData();
+  if (!data.business_name || !data.email) return showToast('Business name and email are required', 'error');
+
+  const btn = e.target.querySelector('[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Sending...';
+
+  try {
+    const res = await fetch('/api/contacts', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+    const contact = await res.json();
+    if (!res.ok) throw new Error(contact.error);
+
+    const sendRes = await fetch(`/api/send/${contact.id}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+    const sendResult = await sendRes.json();
+    if (sendResult.success) {
+      showToast('Email sent successfully!', 'success');
+      e.target.reset();
+      setTimeout(() => location.reload(), 1000);
+    } else {
+      showToast('Contact saved but email failed: ' + (sendResult.error || 'Unknown error'), 'error');
+    }
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save & Send';
+  }
+});
+
+async function saveOnly() {
+  const data = getQuickSendData();
+  if (!data.business_name || !data.email) return showToast('Business name and email are required', 'error');
+  try {
+    const res = await fetch('/api/contacts', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+    showToast('Contact saved!', 'success');
+    document.getElementById('quick-send-form').reset();
+    setTimeout(() => location.reload(), 800);
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+async function previewQuickSend() {
+  const data = getQuickSendData();
+  try {
+    const res = await fetch('/api/preview', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+    const result = await res.json();
+    document.getElementById('preview-subject').textContent = result.subject;
+    document.getElementById('preview-body').textContent = result.body;
+    document.getElementById('preview-modal').style.display = 'flex';
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+function getQuickSendData() {
+  return {
+    business_name: document.getElementById('qs-business').value.trim(),
+    email: document.getElementById('qs-email').value.trim(),
+    contact_name: document.getElementById('qs-contact').value.trim(),
+    industry: document.getElementById('qs-industry').value.trim(),
+    city: document.getElementById('qs-city').value.trim(),
+    notes: document.getElementById('qs-notes').value.trim(),
+  };
+}
+</script>
+{% endblock %}
