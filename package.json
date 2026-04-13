@@ -1,0 +1,24 @@
+{
+  "name": "site-builder-email",
+  "version": "1.0.0",
+  "description": "Dashboard to generate and send personalized outreach emails for website setup services.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "check": "node --check server.js"
+  },
+  "keywords": [
+    "email",
+    "outreach",
+    "dashboard",
+    "website-services"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "nodemailer": "^7.0.9"
+  }
+}

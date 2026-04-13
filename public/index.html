@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Website Outreach Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <h1>Website Outreach Dashboard</h1>
+        <p>
+          Add a business lead, generate a personalized outreach email, then send it directly.
+        </p>
+      </header>
+
+      <section class="card">
+        <h2>Lead Details</h2>
+        <form id="lead-form">
+          <div class="grid">
+            <label>
+              Recipient Email *
+              <input name="recipientEmail" type="email" required placeholder="owner@business.com" />
+            </label>
+            <label>
+              Business Name
+              <input name="businessName" type="text" placeholder="Acme Plumbing" />
+            </label>
+            <label>
+              Contact Name
+              <input name="contactName" type="text" placeholder="Sarah" />
+            </label>
+            <label>
+              City
+              <input name="city" type="text" placeholder="Austin" />
+            </label>
+            <label>
+              Industry
+              <input name="industry" type="text" placeholder="plumbing" />
+            </label>
+            <label class="full-width">
+              Observation (optional)
+              <input
+                name="customObservation"
+                type="text"
+                placeholder="I noticed most traffic currently lands on your Google profile."
+              />
+            </label>
+            <label>
+              Your Name
+              <input name="senderName" type="text" placeholder="Your Name" />
+            </label>
+            <label>
+              Your Company
+              <input name="senderCompany" type="text" placeholder="Your Company" />
+            </label>
+            <label class="full-width">
+              Offer Summary
+              <input
+                name="offerSummary"
+                type="text"
+                placeholder="I build and set up personalized websites for local businesses."
+              />
+            </label>
+            <label class="full-width">
+              Call To Action
+              <input
+                name="ctaLine"
+                type="text"
+                placeholder="If this is something you're interested in, I can send a simple plan."
+              />
+            </label>
+          </div>
+
+          <div class="benefits-block">
+            <h3>Benefits (up to 3 lines)</h3>
+            <div class="grid benefits-grid">
+              <input name="benefit1" type="text" placeholder="Customers can quickly see your services and contact details." />
+              <input name="benefit2" type="text" placeholder="A website builds trust and helps convert profile visitors into calls." />
+              <input name="benefit3" type="text" placeholder="You can rank for local searches beyond your listing profile." />
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Email Draft</h2>
+        <div class="draft-fields">
+          <label>
+            Subject
+            <input id="email-subject" type="text" />
+          </label>
+          <label>
+            Body
+            <textarea id="email-body" rows="14"></textarea>
+          </label>
+        </div>
+        <div class="button-row">
+          <button id="generate-btn" type="button">Generate Draft</button>
+          <button id="send-btn" type="button" class="primary">Send Email</button>
+        </div>
+        <p id="status" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
