@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Website Outreach Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero card">
+        <div>
+          <p class="eyebrow">Simple outreach bot</p>
+          <h1>Personalized website-offer emails in one dashboard</h1>
+          <p class="hero-copy">
+            Fill in a few business details, preview the email, and send a
+            personalized outreach message to businesses that do not yet have a
+            dedicated website.
+          </p>
+        </div>
+        <div class="status-panel <%= smtpReady ? 'status-ready' : 'status-warning' %>">
+          <span class="status-pill"><%= smtpReady ? 'SMTP ready' : 'SMTP not configured' %></span>
+          <p>
+            <%= smtpReady
+              ? 'Your SMTP environment variables are set, so emails can be sent from this dashboard.'
+              : 'Add your SMTP settings to .env before sending. You can still use the live preview right now.' %>
+          </p>
+        </div>
+      </section>
+
+      <% if (error) { %>
+        <section class="banner banner-error"><%= error %></section>
+      <% } %>
+
+      <% if (success) { %>
+        <section class="banner banner-success"><%= success %></section>
+      <% } %>
+
+      <section class="grid">
+        <form class="card form-card" action="/campaigns" method="post" id="outreach-form">
+          <div class="section-header">
+            <h2>Lead + offer details</h2>
+            <p>These fields drive the personalization and email preview.</p>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              Recipient email
+              <input type="email" name="recipientEmail" value="<%= formData.recipientEmail %>" required />
+            </label>
+            <label>
+              Recipient name
+              <input type="text" name="recipientName" value="<%= formData.recipientName %>" placeholder="Owner or manager" />
+            </label>
+            <label>
+              Business name
+              <input type="text" name="businessName" value="<%= formData.businessName %>" required />
+            </label>
+            <label>
+              Business type
+              <input type="text" name="businessType" value="<%= formData.businessType %>" placeholder="plumber, salon, cafe" />
+            </label>
+            <label>
+              City / area
+              <input type="text" name="city" value="<%= formData.city %>" placeholder="Austin" />
+            </label>
+            <label class="span-2">
+              What you are offering
+              <input type="text" name="offerSummary" value="<%= formData.offerSummary %>" />
+            </label>
+            <label class="span-2">
+              Website gap observation
+              <textarea name="missingWebsiteContext" rows="3"><%= formData.missingWebsiteContext %></textarea>
+            </label>
+            <label>
+              Benefit 1
+              <input type="text" name="benefit1" value="<%= formData.benefit1 %>" />
+            </label>
+            <label>
+              Benefit 2
+              <input type="text" name="benefit2" value="<%= formData.benefit2 %>" />
+            </label>
+            <label class="span-2">
+              Benefit 3
+              <input type="text" name="benefit3" value="<%= formData.benefit3 %>" />
+            </label>
+            <label class="span-2">
+              Soft call-to-action
+              <textarea name="callToAction" rows="3"><%= formData.callToAction %></textarea>
+            </label>
+            <label class="span-2">
+              Extra personalization notes
+              <textarea name="customNotes" rows="3" placeholder="Mention a niche, service angle, or design preference."><%= formData.customNotes %></textarea>
+            </label>
+          </div>
+
+          <div class="section-header tight">
+            <h2>Your signature</h2>
+            <p>These details are added to the sign-off in the message.</p>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              Sender name
+              <input type="text" name="senderName" value="<%= formData.senderName %>" required />
+            </label>
+            <label>
+              Sender email
+              <input type="email" name="senderEmail" value="<%= formData.senderEmail %>" required />
+            </label>
+            <label>
+              Sender phone
+              <input type="text" name="senderPhone" value="<%= formData.senderPhone %>" />
+            </label>
+            <label>
+              Sender website
+              <input type="text" name="senderWebsite" value="<%= formData.senderWebsite %>" placeholder="https://yourportfolio.com" />
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="primary-button">Send outreach email</button>
+            <p class="helper-text">
+              Tip: use the preview panel to make sure the pitch sounds natural
+              before sending.
+            </p>
+          </div>
+        </form>
+
+        <aside class="card preview-card">
+          <div class="section-header">
+            <h2>Live email preview</h2>
+            <p>This updates automatically as you edit the form.</p>
+          </div>
+          <div class="preview-box">
+            <p class="preview-label">Subject</p>
+            <p id="preview-subject" class="subject-line"><%= preview.subject %></p>
+            <p class="preview-label">Body</p>
+            <pre id="preview-text"><%= preview.text %></pre>
+          </div>
+        </aside>
+      </section>
+
+      <section class="card history-card">
+        <div class="section-header">
+          <h2>Sent outreach history</h2>
+          <p>Recent sends are stored locally so you can track what went out.</p>
+        </div>
+
+        <% if (campaigns.length === 0) { %>
+          <div class="empty-state">
+            No outreach emails have been sent yet.
+          </div>
+        <% } else { %>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Sent</th>
+                  <th>Business</th>
+                  <th>Recipient</th>
+                  <th>Subject</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% campaigns.forEach((campaign) => { %>
+                  <tr>
+                    <td><%= new Date(campaign.createdAt).toLocaleString() %></td>
+                    <td>
+                      <strong><%= campaign.businessName %></strong>
+                      <% if (campaign.city) { %>
+                        <div class="muted"><%= campaign.city %></div>
+                      <% } %>
+                    </td>
+                    <td>
+                      <div><%= campaign.recipientEmail %></div>
+                      <% if (campaign.recipientName) { %>
+                        <div class="muted"><%= campaign.recipientName %></div>
+                      <% } %>
+                    </td>
+                    <td><%= campaign.subject %></td>
+                    <td><span class="status-pill neutral"><%= campaign.status %></span></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </section>
+    </main>
+
+    <script>
+      const form = document.getElementById("outreach-form");
+      const previewSubject = document.getElementById("preview-subject");
+      const previewText = document.getElementById("preview-text");
+
+      let previewTimeout;
+
+      async function refreshPreview() {
+        const formData = new FormData(form);
+        const params = new URLSearchParams(formData);
+
+        const response = await fetch("/api/preview", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+          },
+          body: params.toString(),
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const preview = await response.json();
+        previewSubject.textContent = preview.subject;
+        previewText.textContent = preview.text;
+      }
+
+      form.addEventListener("input", () => {
+        window.clearTimeout(previewTimeout);
+        previewTimeout = window.setTimeout(refreshPreview, 180);
+      });
+    </script>
+  </body>
+</html>
