@@ -1,0 +1,36 @@
+{
+  "name": "site-builder-email",
+  "version": "1.0.0",
+  "description": "Cold outreach dashboard for personalized website offers",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zmattlol/site-builder-email.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zmattlol/site-builder-email/issues"
+  },
+  "homepage": "https://github.com/zmattlol/site-builder-email#readme",
+  "dependencies": {
+    "next": "^16.2.3",
+    "nodemailer": "^8.0.5",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.3",
+    "typescript": "^6.0.2"
+  },
+  "private": true
+}
