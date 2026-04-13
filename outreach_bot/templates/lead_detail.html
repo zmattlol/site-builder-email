@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ lead.business_name }} — OutreachBot{% endblock %}
+{% block page_title %}{{ lead.business_name }}{% endblock %}
+
+{% block header_actions %}
+  <a href="{{ url_for('leads') }}"
+     class="text-sm text-gray-500 hover:text-gray-700 border border-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition">
+    ← Back to Leads
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+
+  <!-- Left: Details + actions -->
+  <div class="space-y-6">
+
+    <!-- Info card -->
+    <div class="bg-white rounded-2xl border border-gray-200 p-6">
+      <h2 class="font-semibold text-gray-800 mb-4">Lead Information</h2>
+      <dl class="space-y-3">
+        {% set rows = [
+          ('Business', lead.business_name),
+          ('Contact',  lead.contact_name or '—'),
+          ('Email',    lead.email),
+          ('Industry', lead.industry or '—'),
+          ('Location', lead.location or '—'),
+          ('Notes',    lead.notes or '—'),
+          ('Status',   lead.status),
+          ('Sent at',  (lead.sent_at[:16].replace('T',' ') if lead.sent_at else '—')),
+        ] %}
+        {% for label, value in rows %}
+        <div class="flex gap-3">
+          <dt class="w-24 shrink-0 text-sm text-gray-400">{{ label }}</dt>
+          <dd class="text-sm text-gray-800 font-medium">
+            {% if label == 'Status' %}
+              {% if value == 'sent' %}
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Sent</span>
+              {% elif value == 'failed' %}
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Failed</span>
+              {% else %}
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Pending</span>
+              {% endif %}
+            {% elif label == 'Email' %}
+              <a href="mailto:{{ value }}" class="text-brand-600 hover:underline">{{ value }}</a>
+            {% else %}
+              {{ value }}
+            {% endif %}
+          </dd>
+        </div>
+        {% endfor %}
+      </dl>
+    </div>
+
+    <!-- Actions card -->
+    <div class="bg-white rounded-2xl border border-gray-200 p-6">
+      <h2 class="font-semibold text-gray-800 mb-4">Actions</h2>
+      <div class="flex flex-col gap-3">
+
+        <form method="POST" action="{{ url_for('send_to_lead', lead_id=lead.id) }}">
+          <button type="submit"
+                  onclick="return confirm('Send outreach email to {{ lead.email }}?')"
+                  class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+            {% if lead.status == 'sent' %}Re-send Email{% else %}Send Email{% endif %}
+          </button>
+        </form>
+
+        <form method="POST" action="{{ url_for('delete_lead', lead_id=lead.id) }}">
+          <button type="submit"
+                  onclick="return confirm('Permanently delete this lead?')"
+                  class="w-full border border-red-300 text-red-600 hover:bg-red-50 font-medium py-2.5 rounded-lg text-sm transition">
+            Delete Lead
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Email send log -->
+    <div class="bg-white rounded-2xl border border-gray-200 p-6">
+      <h2 class="font-semibold text-gray-800 mb-4">Send History</h2>
+      {% if logs %}
+      <div class="space-y-3">
+        {% for log in logs %}
+        <div class="flex items-start gap-3 text-sm">
+          <span class="mt-0.5 w-2 h-2 rounded-full shrink-0
+                       {% if log.status == 'sent' %}bg-green-400{% else %}bg-red-400{% endif %}">
+          </span>
+          <div>
+            <p class="font-medium text-gray-800">{{ log.subject }}</p>
+            <p class="text-gray-400 text-xs">{{ log.sent_at[:16].replace('T',' ') }}
+              {% if log.status == 'failed' and log.error %}
+                — <span class="text-red-500">{{ log.error }}</span>
+              {% endif %}
+            </p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-sm text-gray-400">No emails sent yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right: Email Preview -->
+  <div class="bg-white rounded-2xl border border-gray-200 flex flex-col">
+    <div class="px-6 py-4 border-b border-gray-100">
+      <h2 class="font-semibold text-gray-800 text-base">Email Preview</h2>
+      <p class="text-xs text-gray-400 mt-0.5">Subject: <em>{{ preview_subject }}</em></p>
+    </div>
+    <div class="flex-1 overflow-y-auto p-2">
+      <iframe srcdoc="{{ preview_html | e }}"
+              class="w-full h-full min-h-[540px] rounded-lg border border-gray-100"
+              sandbox="allow-same-origin">
+      </iframe>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

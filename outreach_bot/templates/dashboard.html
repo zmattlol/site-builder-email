@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — OutreachBot{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block header_actions %}
+  <!-- New campaign quick-create -->
+  <button onclick="document.getElementById('newCampaignModal').classList.remove('hidden')"
+          class="text-sm font-medium text-gray-600 hover:text-brand-600 border border-gray-300 hover:border-brand-400 px-3 py-1.5 rounded-lg transition">
+    + New Campaign
+  </button>
+  <a href="{{ url_for('new_lead') }}"
+     class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+    + Add Lead
+  </a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Stats row -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+  {% set stats = [
+    ('Total Leads',    total_leads,   'bg-indigo-50',  'text-indigo-600',  '👥'),
+    ('Sent',           sent_count,    'bg-green-50',   'text-green-600',   '✅'),
+    ('Pending',        pending_count, 'bg-yellow-50',  'text-yellow-600',  '⏳'),
+    ('Failed',         failed_count,  'bg-red-50',     'text-red-600',     '❌'),
+  ] %}
+  {% for label, value, bg, fg, icon in stats %}
+  <div class="bg-white rounded-2xl border border-gray-200 p-6 flex items-center gap-4">
+    <div class="w-12 h-12 rounded-xl {{ bg }} flex items-center justify-center text-xl">{{ icon }}</div>
+    <div>
+      <p class="text-2xl font-bold text-gray-900">{{ value }}</p>
+      <p class="text-sm text-gray-500">{{ label }}</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Bulk Send + Campaigns row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+  <!-- Bulk send card -->
+  <div class="lg:col-span-1 bg-white rounded-2xl border border-gray-200 p-6">
+    <h2 class="font-semibold text-gray-800 mb-1">Bulk Send</h2>
+    <p class="text-sm text-gray-500 mb-4">Fire off emails to all pending leads at once.</p>
+    <form method="POST" action="{{ url_for('bulk_send') }}">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Filter by campaign (optional)</label>
+      <select name="campaign_id"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-4 focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+        <option value="">All pending leads</option>
+        {% for c in campaigns %}
+        <option value="{{ c.id }}">{{ c.name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit"
+              onclick="return confirm('Send emails to all pending leads in this selection?')"
+              class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2.5 rounded-lg text-sm transition">
+        🚀 Send All Pending
+      </button>
+    </form>
+  </div>
+
+  <!-- Campaigns list -->
+  <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-6">
+    <h2 class="font-semibold text-gray-800 mb-4">Campaigns</h2>
+    {% if campaigns %}
+    <div class="space-y-2">
+      {% for c in campaigns %}
+      <div class="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-xl">
+        <span class="text-sm font-medium text-gray-800">{{ c.name }}</span>
+        <span class="text-xs text-gray-400">{{ c.created_at[:10] }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-sm text-gray-400">No campaigns yet. Create one to organize your leads.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Recent leads table -->
+<div class="bg-white rounded-2xl border border-gray-200">
+  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <h2 class="font-semibold text-gray-800">Recent Leads</h2>
+    <a href="{{ url_for('leads') }}" class="text-sm text-brand-600 hover:underline">View all →</a>
+  </div>
+  {% if recent_leads %}
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+        <tr>
+          <th class="px-6 py-3 text-left">Business</th>
+          <th class="px-6 py-3 text-left">Email</th>
+          <th class="px-6 py-3 text-left">Industry</th>
+          <th class="px-6 py-3 text-left">Status</th>
+          <th class="px-6 py-3 text-left">Added</th>
+          <th class="px-6 py-3 text-left"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for lead in recent_leads %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-3 font-medium text-gray-900">{{ lead.business_name }}</td>
+          <td class="px-6 py-3 text-gray-500">{{ lead.email }}</td>
+          <td class="px-6 py-3 text-gray-500">{{ lead.industry or '—' }}</td>
+          <td class="px-6 py-3">
+            {% if lead.status == 'sent' %}
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Sent</span>
+            {% elif lead.status == 'failed' %}
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Failed</span>
+            {% else %}
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Pending</span>
+            {% endif %}
+          </td>
+          <td class="px-6 py-3 text-gray-400 text-xs">{{ lead.created_at[:10] }}</td>
+          <td class="px-6 py-3">
+            <a href="{{ url_for('lead_detail', lead_id=lead.id) }}"
+               class="text-brand-600 hover:underline text-xs">View</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center py-16 text-gray-400">
+    <p class="text-4xl mb-3">📭</p>
+    <p class="font-medium">No leads yet.</p>
+    <p class="text-sm mt-1">Add your first lead to get started.</p>
+    <a href="{{ url_for('new_lead') }}"
+       class="inline-block mt-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition">
+      + Add Lead
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- New Campaign Modal -->
+<div id="newCampaignModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+    <h3 class="font-semibold text-lg text-gray-900 mb-4">Create New Campaign</h3>
+    <form method="POST" action="{{ url_for('new_campaign') }}">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Campaign Name</label>
+      <input type="text" name="name" required placeholder="e.g. Local Restaurants June"
+             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-4 focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+      <div class="flex gap-3">
+        <button type="submit"
+                class="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2.5 rounded-lg text-sm transition">
+          Create
+        </button>
+        <button type="button"
+                onclick="document.getElementById('newCampaignModal').classList.add('hidden')"
+                class="flex-1 border border-gray-300 text-gray-700 font-medium py-2.5 rounded-lg text-sm hover:bg-gray-50 transition">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Add Lead — OutreachBot{% endblock %}
+{% block page_title %}Add New Lead{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+
+  <!-- Form -->
+  <div class="bg-white rounded-2xl border border-gray-200 p-8">
+    <h2 class="font-semibold text-gray-800 mb-6 text-base">Business Details</h2>
+    <form id="leadForm" method="POST" action="{{ url_for('new_lead') }}" class="space-y-5">
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Business Name <span class="text-red-500">*</span></label>
+          <input type="text" name="business_name" id="f_business_name" required
+                 placeholder="Acme Plumbing Co"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 preview-trigger">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Contact Name</label>
+          <input type="text" name="contact_name" id="f_contact_name"
+                 placeholder="John Smith"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 preview-trigger">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Email Address <span class="text-red-500">*</span></label>
+        <input type="email" name="email" required
+               placeholder="owner@business.com"
+               class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+          <select name="industry" id="f_industry"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 preview-trigger">
+            <option value="">Select industry…</option>
+            <option>Restaurant</option>
+            <option>Salon</option>
+            <option>Plumber</option>
+            <option>Electrician</option>
+            <option>Contractor</option>
+            <option>Retail</option>
+            <option>Landscaping</option>
+            <option>Cleaning</option>
+            <option>Auto</option>
+            <option>Gym</option>
+            <option>Law</option>
+            <option>Medical</option>
+            <option>Dental</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+          <input type="text" name="location" id="f_location"
+                 placeholder="Chicago, IL"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 preview-trigger">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Campaign</label>
+        <select name="campaign_id"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+          <option value="">No campaign</option>
+          {% for c in campaigns %}
+          <option value="{{ c.id }}">{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Personal Note
+          <span class="text-gray-400 font-normal">(appears as P.S. in email)</span>
+        </label>
+        <textarea name="notes" id="f_notes" rows="3"
+                  placeholder="e.g. I noticed you had great reviews on Yelp!"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 preview-trigger resize-none"></textarea>
+      </div>
+
+      <button type="submit"
+              class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-lg text-sm transition">
+        Save Lead
+      </button>
+    </form>
+  </div>
+
+  <!-- Live Email Preview -->
+  <div class="bg-white rounded-2xl border border-gray-200 flex flex-col">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-semibold text-gray-800 text-base">Live Email Preview</h2>
+      <span id="previewSubject" class="text-xs text-gray-400 italic truncate max-w-xs"></span>
+    </div>
+    <div class="flex-1 overflow-y-auto p-2">
+      <iframe id="previewFrame"
+              srcdoc="<html><body style='font-family:sans-serif;color:#9ca3af;display:flex;align-items:center;justify-content:center;height:80vh;text-align:center;'><div><p style='font-size:2rem'>✉️</p><p>Fill in Business Name to preview the email</p></div></body></html>"
+              class="w-full h-full min-h-[500px] rounded-lg border border-gray-100"
+              sandbox="allow-same-origin">
+      </iframe>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let debounceTimer;
+
+  function updatePreview() {
+    const params = new URLSearchParams({
+      business_name: document.getElementById('f_business_name').value,
+      contact_name:  document.getElementById('f_contact_name').value,
+      industry:      document.getElementById('f_industry').value,
+      location:      document.getElementById('f_location').value,
+      notes:         document.getElementById('f_notes').value,
+    });
+
+    if (!params.get('business_name')) return;
+
+    fetch('/preview-email?' + params)
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('previewSubject').textContent = data.subject;
+        const frame = document.getElementById('previewFrame');
+        frame.srcdoc = data.body;
+      })
+      .catch(() => {});
+  }
+
+  document.querySelectorAll('.preview-trigger').forEach(el => {
+    el.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(updatePreview, 400);
+    });
+    el.addEventListener('change', updatePreview);
+  });
+</script>
+{% endblock %}

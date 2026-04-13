@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Email Log — OutreachBot{% endblock %}
+{% block page_title %}Email Log{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-2xl border border-gray-200">
+  {% if logs %}
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+        <tr>
+          <th class="px-6 py-3 text-left">Business</th>
+          <th class="px-6 py-3 text-left">Recipient</th>
+          <th class="px-6 py-3 text-left">Subject</th>
+          <th class="px-6 py-3 text-left">Status</th>
+          <th class="px-6 py-3 text-left">Sent At</th>
+          <th class="px-6 py-3 text-left">Error</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for log in logs %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-3 font-medium text-gray-900">
+            {% if log.lead_id %}
+            <a href="{{ url_for('lead_detail', lead_id=log.lead_id) }}"
+               class="text-brand-600 hover:underline">{{ log.business_name or '—' }}</a>
+            {% else %}—{% endif %}
+          </td>
+          <td class="px-6 py-3 text-gray-500 text-xs">{{ log.email or '—' }}</td>
+          <td class="px-6 py-3 text-gray-700 max-w-xs truncate">{{ log.subject or '—' }}</td>
+          <td class="px-6 py-3">
+            {% if log.status == 'sent' %}
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Sent</span>
+            {% else %}
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Failed</span>
+            {% endif %}
+          </td>
+          <td class="px-6 py-3 text-gray-400 text-xs whitespace-nowrap">
+            {{ log.sent_at[:16].replace('T',' ') }}
+          </td>
+          <td class="px-6 py-3 text-red-500 text-xs max-w-xs truncate">{{ log.error or '' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center py-16 text-gray-400">
+    <p class="text-4xl mb-3">📋</p>
+    <p class="font-medium">No emails logged yet.</p>
+    <p class="text-sm mt-1">Emails appear here after sending.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

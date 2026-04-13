@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Leads — OutreachBot{% endblock %}
+{% block page_title %}Leads{% endblock %}
+
+{% block header_actions %}
+  <a href="{{ url_for('new_lead') }}"
+     class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+    + Add Lead
+  </a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Filters bar -->
+<form method="GET" action="{{ url_for('leads') }}" class="flex flex-wrap gap-3 mb-6">
+  <input type="text" name="q" value="{{ search }}" placeholder="Search business or email…"
+         class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-56 focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+
+  <select name="status"
+          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All statuses</option>
+    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+    <option value="sent"    {% if status_filter == 'sent'    %}selected{% endif %}>Sent</option>
+    <option value="failed"  {% if status_filter == 'failed'  %}selected{% endif %}>Failed</option>
+  </select>
+
+  <select name="campaign"
+          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+    <option value="all" {% if campaign_filter == 'all' %}selected{% endif %}>All campaigns</option>
+    {% for c in campaigns %}
+    <option value="{{ c.id }}" {% if campaign_filter == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+    {% endfor %}
+  </select>
+
+  <button type="submit"
+          class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+    Filter
+  </button>
+  {% if search or status_filter != 'all' or campaign_filter != 'all' %}
+  <a href="{{ url_for('leads') }}"
+     class="text-sm text-gray-500 hover:text-gray-700 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
+    Clear
+  </a>
+  {% endif %}
+</form>
+
+<!-- Table -->
+<div class="bg-white rounded-2xl border border-gray-200">
+  {% if leads %}
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+        <tr>
+          <th class="px-6 py-3 text-left">Business</th>
+          <th class="px-6 py-3 text-left">Contact</th>
+          <th class="px-6 py-3 text-left">Email</th>
+          <th class="px-6 py-3 text-left">Industry</th>
+          <th class="px-6 py-3 text-left">Campaign</th>
+          <th class="px-6 py-3 text-left">Status</th>
+          <th class="px-6 py-3 text-left">Sent</th>
+          <th class="px-6 py-3 text-left"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for lead in leads %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-3 font-medium text-gray-900">{{ lead.business_name }}</td>
+          <td class="px-6 py-3 text-gray-500">{{ lead.contact_name or '—' }}</td>
+          <td class="px-6 py-3 text-gray-500">{{ lead.email }}</td>
+          <td class="px-6 py-3 text-gray-500">{{ lead.industry or '—' }}</td>
+          <td class="px-6 py-3 text-gray-400 text-xs">{{ lead.campaign_name or '—' }}</td>
+          <td class="px-6 py-3">
+            {% if lead.status == 'sent' %}
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Sent</span>
+            {% elif lead.status == 'failed' %}
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Failed</span>
+            {% else %}
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Pending</span>
+            {% endif %}
+          </td>
+          <td class="px-6 py-3 text-gray-400 text-xs">
+            {{ lead.sent_at[:16].replace('T',' ') if lead.sent_at else '—' }}
+          </td>
+          <td class="px-6 py-3">
+            <a href="{{ url_for('lead_detail', lead_id=lead.id) }}"
+               class="text-brand-600 hover:underline text-xs font-medium">View →</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center py-16 text-gray-400">
+    <p class="text-4xl mb-3">🔍</p>
+    <p class="font-medium">No leads match your filters.</p>
+    <p class="text-sm mt-1">Try changing the filters or add a new lead.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
