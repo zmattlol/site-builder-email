@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Settings — Outreach Bot{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Settings</h1>
+    <p>Configure your SMTP email settings to start sending</p>
+</div>
+
+<div class="card">
+    <h2 class="card-title">SMTP Configuration</h2>
+    <form method="POST">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="smtp_host">SMTP Host</label>
+                <input type="text" id="smtp_host" name="smtp_host" value="{{ settings.smtp_host }}"
+                       placeholder="smtp.gmail.com">
+            </div>
+            <div class="form-group">
+                <label for="smtp_port">SMTP Port</label>
+                <input type="number" id="smtp_port" name="smtp_port" value="{{ settings.smtp_port }}"
+                       placeholder="587">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="smtp_username">Username</label>
+                <input type="text" id="smtp_username" name="smtp_username" value="{{ settings.smtp_username }}"
+                       placeholder="your-email@gmail.com">
+            </div>
+            <div class="form-group">
+                <label for="smtp_password">Password</label>
+                <input type="password" id="smtp_password" name="smtp_password"
+                       placeholder="{% if settings.smtp_password %}••••••••{% else %}App password{% endif %}">
+                <div class="hint">Leave blank to keep current password. For Gmail, use an App Password.</div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="from_email">From Email</label>
+                <input type="email" id="from_email" name="from_email" value="{{ settings.from_email }}"
+                       placeholder="your-email@gmail.com">
+            </div>
+            <div class="form-group">
+                <label for="from_name">Your Name</label>
+                <input type="text" id="from_name" name="from_name" value="{{ settings.from_name }}"
+                       placeholder="John Smith">
+                <div class="hint">This name appears in your outreach emails and the From field</div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+            <button type="button" class="btn btn-outline" id="testBtn" onclick="testSmtp()">Test Connection</button>
+        </div>
+    </form>
+
+    <div id="testResult" style="margin-top:16px; display:none;"></div>
+</div>
+
+<div class="card">
+    <h2 class="card-title">Gmail Setup Guide</h2>
+    <div style="font-size:14px; color:var(--text-muted); line-height:1.7;">
+        <p>To use Gmail as your SMTP provider:</p>
+        <ol style="margin-top:8px; padding-left:20px;">
+            <li>Go to your Google Account &rarr; Security</li>
+            <li>Enable 2-Step Verification if not already on</li>
+            <li>Go to App Passwords (search for it in account settings)</li>
+            <li>Generate a new app password for "Mail"</li>
+            <li>Use that 16-character password in the SMTP Password field above</li>
+        </ol>
+        <p style="margin-top:12px;"><strong>Host:</strong> smtp.gmail.com &nbsp;|&nbsp; <strong>Port:</strong> 587</p>
+    </div>
+</div>
+
+<script>
+async function testSmtp() {
+    const btn = document.getElementById('testBtn');
+    const result = document.getElementById('testResult');
+    btn.textContent = 'Testing...';
+    btn.disabled = true;
+    result.style.display = 'none';
+
+    try {
+        const res = await fetch('{{ url_for("test_smtp") }}', { method: 'POST' });
+        const data = await res.json();
+        result.style.display = 'block';
+        result.className = data.ok ? 'flash flash-success' : 'flash flash-error';
+        result.textContent = data.message;
+    } catch (e) {
+        result.style.display = 'block';
+        result.className = 'flash flash-error';
+        result.textContent = 'Network error. Please try again.';
+    } finally {
+        btn.textContent = 'Test Connection';
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}
